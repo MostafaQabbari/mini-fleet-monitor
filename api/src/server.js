@@ -4,9 +4,17 @@ import { logger } from './lib/logger.js';
 import { pool } from './lib/db.js';
 import { redis } from './lib/redis.js';
 import { createApp } from './app.js';
+import { migrate } from './db/migrate.js';
 
 const app = createApp();
 const server = http.createServer(app);
+
+try {
+  await migrate();
+} catch (err) {
+  logger.fatal(err, 'could not run migrations');
+  process.exit(1);
+}
 
 server.listen(config.port, () => {
   logger.info({ port: config.port, env: config.env }, 'API listening');
