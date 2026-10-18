@@ -5,14 +5,16 @@ import { pool } from './lib/db.js';
 import { redis } from './lib/redis.js';
 import { createApp } from './app.js';
 import { migrate } from './db/migrate.js';
+import { seed } from './db/seed.js';
 
 const app = createApp();
 const server = http.createServer(app);
 
 try {
   await migrate();
+  await seed();
 } catch (err) {
-  logger.fatal(err, 'could not run migrations');
+  logger.fatal(err, 'startup failed');
   process.exit(1);
 }
 

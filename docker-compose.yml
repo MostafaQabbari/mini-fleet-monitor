@@ -35,6 +35,8 @@ services:
       JWT_SECRET: ${JWT_SECRET:-dev-only-change-me-please-32-chars-min}
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-1h}
       CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:5173}
+      SEED_ADMIN_EMAIL: ${SEED_ADMIN_EMAIL:-admin@test.com}
+      SEED_ADMIN_PASSWORD: ${SEED_ADMIN_PASSWORD:-test123}
     ports:
       - "${API_PORT:-3000}:3000"
     depends_on:

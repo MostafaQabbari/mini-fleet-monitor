@@ -9,6 +9,8 @@ const schema = z.object({
   JWT_EXPIRES_IN: z.string().default('1h'),
   CORS_ORIGIN: z.string().default('http://localhost:5173'), // comma-separated
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent']).default('info'),
+  SEED_ADMIN_EMAIL: z.string().email().default('admin@test.com'),
+  SEED_ADMIN_PASSWORD: z.string().min(6).default('test123'),
 });
 
 const parsed = schema.safeParse(process.env);
@@ -32,4 +34,5 @@ export const config = Object.freeze({
   jwt: Object.freeze({ secret: env.JWT_SECRET, expiresIn: env.JWT_EXPIRES_IN }),
   corsOrigins: env.CORS_ORIGIN.split(',').map((o) => o.trim()).filter(Boolean),
   logLevel: env.LOG_LEVEL,
+  seed: Object.freeze({ email: env.SEED_ADMIN_EMAIL, password: env.SEED_ADMIN_PASSWORD }),
 });
