@@ -4,6 +4,9 @@ import { pinoHttp } from 'pino-http';
 import { config } from './config.js';
 import { logger } from './lib/logger.js';
 import { healthRouter } from './routes/health.js';
+import { authRouter } from './routes/auth.js';
+import { robotsRouter } from './routes/robots.js';
+import { requireAuth } from './middleware/auth.js';
 import { notFound, errorHandler } from './middleware/errorHandler.js';
 
 export function createApp() {
@@ -21,6 +24,8 @@ export function createApp() {
   app.use(express.json({ limit: '100kb' }));
 
   app.use('/health', healthRouter);
+  app.use('/auth', authRouter);
+  app.use('/robots', requireAuth, robotsRouter);
 
   app.use(notFound);
   app.use(errorHandler);
