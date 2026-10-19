@@ -91,34 +91,37 @@ migrations and the seed before it reports healthy), then the simulator and the w
 ## Requirements checklist
 
 ### Muss-Kriterien
-
-- [x] Login with email and password, bcrypt-hashed passwords, JWT for all protected routes
-- [x] Postgres for users and robots, schema created by versioned SQL migrations
-- [x] Demo user and five robots seeded on first start
-- [x] Protected REST API for the robot list
-- [x] Map with OpenLayers and OpenStreetMap tiles, one marker per robot
-- [x] Simulated movement every 2 seconds
-- [x] Live position updates in the browser over a WebSocket
-- [x] Redis cache for the robot list
-- [x] Whole stack starts with one `docker compose up --build`
+- [x] Backend: Node.js + Express, PostgreSQL, Redis (cache and Pub/Sub)
+- [x] JWT login with protected routes (middleware checks the token)
+- [x] HTTP with CORS (restricted to the frontend origin)
+- [x] REST + WebSocket for server-client communication
+- [x] Docker Compose with Postgres and Redis (plus api, simulator and web)
+- [x] Frontend: React (JavaScript) with HTML/CSS
+- [x] OpenLayers map, login page and protected dashboard
+- [x] Robots shown as markers with live position updates
+- [x] Data model: `users` (id, email, password_hash, created_at) and `robots` (id, name, status idle|moving, lat, lon, updated_at)
+- [x] `POST /auth/login`, `GET /robots` (protected), `POST /robots/:id/move` (random new position)
+- [x] Moves run automatically: the simulator calls the same move logic every 2 seconds,
+      updates the database and broadcasts the position over WebSocket
+- [x] Robot list next to the map (name, status, last position)
+- [x] `docker compose up` starts api, db, redis and the frontend
+- [x] Demo user admin@test.com / test123
+- [x] README with setup steps, architecture and screenshots
 
 ### Optional
-
-- [x] Create robots (`POST /robots`) and move a single robot on demand (`POST /robots/:id/move`)
-- [x] Start and stop the simulation from the UI, state shared by all clients
-- [x] Robot list with status badge, coordinates and "updated Xs ago"
-- [x] Selecting a robot in the list or on the map highlights it and pans the map
-- [x] Connection indicator with automatic reconnect and exponential backoff
-- [x] Responsive layout (list moves below the map on small screens)
+- [x] `POST /robots` to add a robot
+- [x] Redis cache for `GET /robots` (TTL 10 s)
 
 ### Bonus
+- [x] Redis Pub/Sub instead of in-memory broadcast
+- [x] Position history (`robot_positions`, `GET /robots/:id/positions`)
+- [x] Start/Stop simulation buttons in the frontend
+- [x] Deployable with Dockerfiles + docker-compose (nginx for the frontend)
 
-- [x] Redis Pub/Sub between simulator and API, so the API can run as several instances
-- [x] Position history per robot (`GET /robots/:id/positions`)
-- [x] Simulator as its own service
-- [x] WebSocket connections are closed when their token expires
-- [x] Automated tests (unit tests for the movement logic, API integration tests with supertest)
-- [x] Frontend served by nginx in Docker with proper caching headers
+### Extras
+- Automated tests (unit + API integration), WebSocket token expiry, reconnect with backoff,
+  graceful shutdown, healthchecks and startup ordering
+
 
 ## API
 
