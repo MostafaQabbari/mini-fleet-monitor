@@ -67,5 +67,26 @@ services:
         condition: service_healthy
     restart: unless-stopped
 
+  # static build served by nginx; the browser talks to the api directly, so the urls are
+  # the ones the browser sees, and CORS_ORIGIN above has to match this port
+  web:
+    build:
+      context: ./web
+      args:
+        VITE_API_URL: http://localhost:3000
+        VITE_WS_URL: ws://localhost:3000/ws
+    ports:
+      - "5173:80"
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      # not localhost: busybox wget tries ::1 first and nginx here only listens on ipv4
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1/"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
 volumes:
   pgdata:

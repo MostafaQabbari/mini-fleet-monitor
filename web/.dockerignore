@@ -1,0 +1,6 @@
+node_modules
+dist
+npm-debug.log
+# vite would read these during the build and bake them into the bundle
+.env
+.env.*
