@@ -1,7 +1,10 @@
+import { lazy, Suspense } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { getToken } from './auth.js';
 import Login from './pages/Login.jsx';
-import Dashboard from './pages/Dashboard.jsx';
+
+// openlayers is most of the bundle, so the login page shouldn't have to download it
+const Dashboard = lazy(() => import('./pages/Dashboard.jsx'));
 
 function ProtectedRoute({ children }) {
   return getToken() ? children : <Navigate to="/login" replace />;
@@ -26,7 +29,9 @@ export default function App() {
         path="/"
         element={
           <ProtectedRoute>
-            <Dashboard />
+            <Suspense fallback={<p className="empty">Loading…</p>}>
+              <Dashboard />
+            </Suspense>
           </ProtectedRoute>
         }
       />
