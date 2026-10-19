@@ -1,9 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-
-// services/robots.js pulls in config, which exits without a JWT_SECRET
-process.env.JWT_SECRET ??= 'test-secret-that-is-at-least-32-characters';
-const { nextPosition } = await import('../src/services/robots.js');
+import { nextPosition } from '../src/services/position.js';
 
 // returns the given values in order, so each test controls every random draw
 const seq = (...values) => () => values.shift();

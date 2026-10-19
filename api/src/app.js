@@ -6,6 +6,7 @@ import { logger } from './lib/logger.js';
 import { healthRouter } from './routes/health.js';
 import { authRouter } from './routes/auth.js';
 import { robotsRouter } from './routes/robots.js';
+import { simulationRouter } from './routes/simulation.js';
 import { requireAuth } from './middleware/auth.js';
 import { notFound, errorHandler } from './middleware/errorHandler.js';
 
@@ -26,6 +27,7 @@ export function createApp() {
   app.use('/health', healthRouter);
   app.use('/auth', authRouter);
   app.use('/robots', requireAuth, robotsRouter);
+  app.use('/simulation', requireAuth, simulationRouter);
 
   app.use(notFound);
   app.use(errorHandler);

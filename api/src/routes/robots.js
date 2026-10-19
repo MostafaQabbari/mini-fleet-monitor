@@ -4,7 +4,6 @@ import { query } from '../lib/db.js';
 import { HttpError } from '../lib/errors.js';
 import { getJson, setJson, del } from '../lib/cache.js';
 import { ROBOT_COLUMNS as COLUMNS, moveRobot } from '../services/robots.js';
-import { broadcast } from '../ws.js';
 
 export const robotsRouter = Router();
 
@@ -20,6 +19,10 @@ const createSchema = z.object({
 // upper bound is postgres' integer max, anything larger would be a 500 instead of a 404
 const idParams = z.object({
   id: z.coerce.number().int().positive().max(2147483647),
+});
+
+const historyQuery = z.object({
+  limit: z.coerce.number().int().min(1).max(500).default(50),
 });
 
 // robots created without a position start somewhere in Leipzig city centre
@@ -63,6 +66,21 @@ robotsRouter.post('/:id/move', async (req, res) => {
   const robot = await moveRobot(id);
   if (!robot) throw new HttpError(404, 'Robot not found');
 
-  broadcast({ type: 'robot', robot });
   res.json(robot);
+});
+
+robotsRouter.get('/:id/positions', async (req, res) => {
+  const { id } = idParams.parse(req.params);
+  const { limit } = historyQuery.parse(req.query);
+
+  // separate lookup so a robot without history is [] and a missing robot is a 404
+  const { rowCount } = await query('SELECT 1 FROM robots WHERE id = $1', [id]);
+  if (!rowCount) throw new HttpError(404, 'Robot not found');
+
+  const { rows } = await query(
+    `SELECT lat, lon, status, recorded_at FROM robot_positions
+     WHERE robot_id = $1 ORDER BY recorded_at DESC, id DESC LIMIT $2`,
+    [id, limit],
+  );
+  res.json(rows);
 });

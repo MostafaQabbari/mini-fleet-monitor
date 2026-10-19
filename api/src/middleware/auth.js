@@ -12,7 +12,7 @@ export function signToken(user) {
 // also used by the websocket server, so it lives outside the middleware
 export function verifyToken(token) {
   const payload = jwt.verify(token, config.jwt.secret, { algorithms: ['HS256'] });
-  return { id: Number(payload.sub), email: payload.email };
+  return { id: Number(payload.sub), email: payload.email, exp: payload.exp };
 }
 
 export function requireAuth(req, res, next) {

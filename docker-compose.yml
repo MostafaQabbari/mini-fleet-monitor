@@ -27,7 +27,7 @@ services:
 
   api:
     build: ./api
-    environment:
+    environment: &api-env
       NODE_ENV: ${NODE_ENV:-development}
       PORT: 3000
       DATABASE_URL: postgres://${POSTGRES_USER:-fleet}:${POSTGRES_PASSWORD:-fleet}@db:5432/${POSTGRES_DB:-fleet}
@@ -50,6 +50,18 @@ services:
       interval: 5s
       timeout: 3s
       retries: 10
+    restart: unless-stopped
+
+  # same image as the api, but only runs the robot simulation: no migrations, no port
+  simulator:
+    build: ./api
+    command: ["node", "src/simulator.js"]
+    environment: *api-env
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     restart: unless-stopped
 
 volumes:
