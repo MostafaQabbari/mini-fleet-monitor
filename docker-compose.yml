@@ -62,6 +62,9 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      # the api runs the migrations and only reports healthy after listen, which comes after them
+      api:
+        condition: service_healthy
     restart: unless-stopped
 
 volumes:
