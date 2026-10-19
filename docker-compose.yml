@@ -34,7 +34,7 @@ services:
       REDIS_URL: redis://redis:6379
       JWT_SECRET: ${JWT_SECRET:-dev-only-change-me-please-32-chars-min}
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-1h}
-      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:5173}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:${WEB_PORT:-5173}}
       LOG_LEVEL: ${LOG_LEVEL:-info}
       SEED_ADMIN_EMAIL: ${SEED_ADMIN_EMAIL:-admin@test.com}
       SEED_ADMIN_PASSWORD: ${SEED_ADMIN_PASSWORD:-test123}
@@ -68,15 +68,15 @@ services:
     restart: unless-stopped
 
   # static build served by nginx; the browser talks to the api directly, so the urls are
-  # the ones the browser sees, and CORS_ORIGIN above has to match this port
+  # the ones the browser sees (host ports), and CORS_ORIGIN above follows WEB_PORT
   web:
     build:
       context: ./web
       args:
-        VITE_API_URL: http://localhost:3000
-        VITE_WS_URL: ws://localhost:3000/ws
+        VITE_API_URL: http://localhost:${API_PORT:-3000}
+        VITE_WS_URL: ws://localhost:${API_PORT:-3000}/ws
     ports:
-      - "5173:80"
+      - "${WEB_PORT:-5173}:80"
     depends_on:
       api:
         condition: service_healthy
