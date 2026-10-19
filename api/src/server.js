@@ -6,9 +6,12 @@ import { redis } from './lib/redis.js';
 import { createApp } from './app.js';
 import { migrate } from './db/migrate.js';
 import { seed } from './db/seed.js';
+import { attachWebSocket, closeWebSocket } from './ws.js';
+import { startSimulator, stopSimulator } from './simulator.js';
 
 const app = createApp();
 const server = http.createServer(app);
+attachWebSocket(server);
 
 try {
   await migrate();
@@ -20,6 +23,7 @@ try {
 
 server.listen(config.port, () => {
   logger.info({ port: config.port, env: config.env }, 'API listening');
+  startSimulator();
 });
 
 let shuttingDown = false;
@@ -35,6 +39,8 @@ async function shutdown(signal) {
   }, 10_000);
   forceExit.unref();
 
+  await stopSimulator();
+  closeWebSocket();
   server.close(async () => {
     await Promise.allSettled([pool.end(), redis.quit()]);
     logger.info('Shutdown complete');

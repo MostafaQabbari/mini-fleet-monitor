@@ -3,18 +3,23 @@ import { z } from 'zod';
 import { query } from '../lib/db.js';
 import { HttpError } from '../lib/errors.js';
 import { getJson, setJson, del } from '../lib/cache.js';
+import { ROBOT_COLUMNS as COLUMNS, moveRobot } from '../services/robots.js';
+import { broadcast } from '../ws.js';
 
 export const robotsRouter = Router();
 
 const CACHE_KEY = 'robots:all';
 const CACHE_TTL = 10; // seconds
 
-const COLUMNS = 'id, name, status, lat, lon, updated_at';
-
 const createSchema = z.object({
   name: z.string().trim().min(1).max(50),
   lat: z.number().min(-90).max(90).optional(),
   lon: z.number().min(-180).max(180).optional(),
+});
+
+// upper bound is postgres' integer max, anything larger would be a 500 instead of a 404
+const idParams = z.object({
+  id: z.coerce.number().int().positive().max(2147483647),
 });
 
 // robots created without a position start somewhere in Leipzig city centre
@@ -50,4 +55,14 @@ robotsRouter.post('/', async (req, res) => {
 
   await del(CACHE_KEY);
   res.status(201).json(robot);
+});
+
+robotsRouter.post('/:id/move', async (req, res) => {
+  const { id } = idParams.parse(req.params);
+
+  const robot = await moveRobot(id);
+  if (!robot) throw new HttpError(404, 'Robot not found');
+
+  broadcast({ type: 'robot', robot });
+  res.json(robot);
 });
